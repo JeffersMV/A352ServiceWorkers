@@ -1,8 +1,7 @@
-import {Component, ApplicationRef, OnInit} from '@angular/core';
-import {LogUpdateService} from './log-update.service';
-import {CheckForUpdateService} from './check-for-update.service';
-import {PromptUpdateService} from './prompt-update.service';
-import {WorkerService} from './worker.service';
+import {Component} from '@angular/core';
+import {MatSnackBar} from '@angular/material';
+import {SwPush, SwUpdate} from '@angular/service-worker';
+import {interval} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -12,33 +11,37 @@ import {WorkerService} from './worker.service';
 export class AppComponent {
   title = 'Angular-Service-Workers';
 
-  constructor(public sw: WorkerService) {
-    this.sw.checkForUpdates();
-
-    // if ('serviceWorker' in navigator) {
-    //   window.addEventListener('load', function () {
-    //     navigator.serviceWorker.register('/ngsw-worker.js').then(function (registration) {
-    //       // Registration was successful
-    //       console.log('ServiceWorker registration successful with scope: ', registration.scope);
-    //     }, function (err) {
-    //       // registration failed :(
-    //       console.log('ServiceWorker registration failed: ', err);
-    //     });
+  constructor(public swUpdate: SwUpdate, public swPush: SwPush, public snackBar: MatSnackBar) {
+    // swUpdate.available.subscribe(update2 => {
+    //   console.log('update available');
+    //
+    //   const snack = snackBar.open('Update Available', 'Reload');
+    //   snack.onAction().subscribe(() => {
+    //     window.location.reload();
     //   });
-    // }
+    // });
+    console.log('AppComponent=>WorkerService.checkForUpdates();');
+    if (swUpdate.isEnabled) {
+      interval(5000).subscribe(() => swUpdate.checkForUpdate()
+        .then(() => console.log('Checking for Updates!')));
+    }
+    this.swUpdate.available.subscribe(event => {
+      console.log('checkForUpdates()');
+      console.log(event);
+      this.promptUser(event);
+    });
   }
 
-  // ngOnInit() {
-  //
-  //   // this.applicationRef.isStable.subscribe((s) => { // #1
-  //   //   if (s) { // #2
-  //   //     setInterval(t => { console.log('Ping')}, 500);
-  //   //   } // #3
-  //   // }); // #4
-  //   // // If you uncomment 1-4 - service-worker will not run
-  //
-  //   this.applicationRef.isStable.subscribe(t => {
-  //     console.log('App stable: ' + t);
-  //   });
-  // }
+  private promptUser(event): void {
+    console.log('promptUser');
+    console.log(event);
+    const snackBarRef = this.snackBar.open(
+      'A new version of the app is available',
+      'Refresh',
+      {horizontalPosition: 'left'}
+    );
+    console.log(snackBarRef);
+    snackBarRef.onAction().subscribe(() =>
+      this.swUpdate.activateUpdate().then(() => document.location.reload()));
+  }
 }

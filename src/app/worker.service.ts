@@ -8,25 +8,31 @@ import {MatSnackBar} from '@angular/material';
 })
 export class WorkerService {
 
-  constructor(public updates: SwUpdate, public snackBar: MatSnackBar) {
-    if (updates.isEnabled) {
-      interval( 6000).subscribe(() => updates.checkForUpdate()
+  constructor(public swUpdate: SwUpdate, public snackBar: MatSnackBar) {
+    if (swUpdate.isEnabled) {
+      interval( 5000).subscribe(() => swUpdate.checkForUpdate()
         .then(() => console.log('Checking for Updates!')));
     }
   }
 
   public checkForUpdates() {
-    this.updates.available.subscribe(event => this.promptUser(event));
+    this.swUpdate.available.subscribe(event => {
+      console.log('checkForUpdates()');
+      console.log(event);
+      this.promptUser(event);
+    });
   }
 
   private promptUser(event: any): void {
+    console.log('promptUser');
     console.log(event);
     const snackBarRef = this.snackBar.open(
       'A new version of the app is available',
       'Refresh',
       {horizontalPosition: 'left'}
     );
+    console.log(snackBarRef);
     snackBarRef.onAction().subscribe(() =>
-      this.updates.activateUpdate().then(() => window.location.reload()));
+      this.swUpdate.activateUpdate().then(() => document.location.reload()));
   }
 }

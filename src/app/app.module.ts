@@ -27,14 +27,14 @@ import { HomeComponent } from './home/home.component';
     BrowserModule,
     MatSnackBarModule,
     BrowserAnimationsModule,
-    ServiceWorkerModule.register('ngsw-worker.js', {enabled: environment.production}),
-    AppRoutingModule,
-    // environment.production ? ServiceWorkerModule.register('/ngsw-worker.js') : []
+    // ServiceWorkerModule.register('ngsw-worker.js', {enabled: environment.production})
+    environment.production ? ServiceWorkerModule.register('ngsw-worker.js')  : []
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule {
   constructor() {
+    console.log('AppModule=>ServiceWorkerModule.register(\'ngsw-worker.js\', {enabled: environment.production})');
   }
 }
